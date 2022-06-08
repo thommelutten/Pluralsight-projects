@@ -11,15 +11,15 @@ using System.Threading.Tasks;
 namespace CoreCodeCamp.Controllers
 {
     [Route("api/[controller]")]
-    [ApiVersion("1.0")]
+    [ApiVersion("2.0")]
     [ApiController]
-    public class CampsController : ControllerBase
+    public class Camps2Controller : ControllerBase
     {
         private readonly ICampRepository _campRespotiry;
         private readonly IMapper _mapper;
         private readonly LinkGenerator _linkGenerator;
 
-        public CampsController(ICampRepository campRepository, IMapper mapper, LinkGenerator linkGenerator)
+        public Camps2Controller(ICampRepository campRepository, IMapper mapper, LinkGenerator linkGenerator)
         {
             _campRespotiry = campRepository;
             _mapper = mapper;
@@ -27,34 +27,19 @@ namespace CoreCodeCamp.Controllers
         }
 
         [HttpGet]
-        [MapToApiVersion("1.0")]
-        public async Task<ActionResult<CampModel[]>> Get(bool includeTalks = false)
+        public async Task<ActionResult> Get(bool includeTalks = false)
         {
             try
             {
                 var results = await _campRespotiry.GetAllCampsAsync(includeTalks);
 
-                CampModel[] models = _mapper.Map<CampModel[]>(results);
+                var result = new
+                {
+                    Count = results.Length,
+                    Results = _mapper.Map<CampModel[]>(results)
+                };
 
-                return Ok(models);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, "Database Failure");
-            }
-        }
-
-        [HttpGet]
-        [MapToApiVersion("1.1")]
-        public async Task<ActionResult<CampModel[]>> Get11(bool includeTalks = false)
-        {
-            try
-            {
-                var results = await _campRespotiry.GetAllCampsAsync(true);
-
-                CampModel[] models = _mapper.Map<CampModel[]>(results);
-
-                return Ok(models);
+                return Ok(result);
             }
             catch (Exception ex)
             {
